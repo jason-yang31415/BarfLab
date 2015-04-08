@@ -32,16 +32,16 @@ public class EqFile {
 				String leftString = line1[0];
 				String rightString = line1[1];
 				
-				//Thing left = parseExpression(leftString);
-				//Thing right = parseExpression(rightString);
-				parseExpression(leftString);
-				parseExpression(rightString);
+				Thing left = parseExpression(leftString);
+				Thing right = parseExpression(rightString);
+				//parseExpression(leftString);
+				//parseExpression(rightString);
 			}
 		}
 		reader.close();
 	}
 	
-	public void parseExpression(String e){
+	public Thing parseExpression(String e){
 		/*int rPpos = e.indexOf(")");
 		if (rPpos >= 0){
 			String rPstring = e.substring(0, rPpos);
@@ -69,7 +69,7 @@ public class EqFile {
 			System.out.println(e);
 		}*/
 		
-		Thing thing;
+		Thing thing = null;
 		
 		e = e.replaceAll("\\s", "");
 		String[] stringArray = e.split("");
@@ -77,6 +77,7 @@ public class EqFile {
 		int parentheses = 0;
 		int opOrder = -1;
 		int opPos = -1;
+		String op = "";
 		
 		for (String s : string){
 			if (s.equals("("))
@@ -94,11 +95,13 @@ public class EqFile {
 							if (opOrder > ops.indexOf(s)){
 								opOrder = ops.indexOf(s);
 								opPos = string.indexOf(s);
+								op = s;
 							}
 						}
 						else {
 							opOrder = ops.indexOf(s);
 							opPos = string.indexOf(s);
+							op = s;
 						}
 					}
 				}
@@ -112,6 +115,29 @@ public class EqFile {
 			String rightString = e.substring(opPos + 1, e.length());
 			System.out.println(leftString);
 			System.out.println(rightString);
+			System.out.println();
+			OpType type;
+			switch(op){
+			case "+":
+				type = OpType.ADD;
+				break;
+			case "-":
+				type = OpType.SUB;
+				break;
+			case "*":
+				type = OpType.MULT;
+				break;
+			case "/":
+				type = OpType.DIV;
+				break;
+			case "^":
+				type = OpType.POW;
+				break;
+			default:
+				type = OpType.ADD;
+				break;
+			}
+			thing = new Operation(type, parseExpression(leftString), parseExpression(rightString));
 		}
 		//Does not contain any ops outside parentheses
 		else {
@@ -125,7 +151,9 @@ public class EqFile {
 			
 			//Check if contains ops inside parentheses
 			if (containsOp){
-				
+				//remove outer parentheses
+				String stringNew = e.substring(1, e.length() - 1);
+				thing = parseExpression(stringNew);
 			}
 			else {
 				//Parse e as constant or var
@@ -137,6 +165,8 @@ public class EqFile {
 				}
 			}
 		}
+		
+		return thing;
 		
 		/*e = e.replaceAll("\\s", "");
 		String[] stringArray = e.split("");
