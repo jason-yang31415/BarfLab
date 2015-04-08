@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -22,7 +23,8 @@ public class EqFile {
 	}
 	
 	public EqFile() throws IOException{
-		BufferedReader reader = new BufferedReader(new FileReader("D:/Eclipse/Workspace/EqS/src/eq/test_complicated.eq"));
+		InputStream i = getClass().getResourceAsStream("eq/test_complicated.eq");
+		BufferedReader reader = new BufferedReader(new InputStreamReader(i));
 		String line;
 		while ((line = reader.readLine()) != null){
 			//parse
