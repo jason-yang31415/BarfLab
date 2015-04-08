@@ -22,13 +22,14 @@ public class EqFile {
 	}
 	
 	public EqFile() throws IOException{
-		BufferedReader reader = new BufferedReader(new FileReader("D:/Eclipse/Workspace/EqS/src/eq/test.eq"));
+		BufferedReader reader = new BufferedReader(new FileReader("D:/Eclipse/Workspace/EqS/src/eq/test_complicated.eq"));
 		String line;
 		while ((line = reader.readLine()) != null){
 			//parse
 			if (line.startsWith("EQ ")){
 				String equation = line.split("EQ ")[1];
-				String[] line1 = equation.split(" = ");
+				equation = equation.replaceAll("\\s", "");
+				String[] line1 = equation.split("=");
 				String leftString = line1[0];
 				String rightString = line1[1];
 				
