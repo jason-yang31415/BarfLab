@@ -36,6 +36,9 @@ public class EqFile {
 				Thing right = parseExpression(rightString);
 				//parseExpression(leftString);
 				//parseExpression(rightString);
+				
+				EqS eqs = new EqS(left, right);
+				System.out.println(eqs.getAnswer());
 			}
 		}
 		reader.close();
