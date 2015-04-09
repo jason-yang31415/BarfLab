@@ -1,25 +1,36 @@
 import java.io.IOException;
 
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 
 public class Boot {
 	
 	public static void main(String[] args){
-		Eq equation = null;
 		try {
-			equation = new EqFile().importEq("eq/test_complicated.eq");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			System.err.println("Something screwed up :(\nPlease report this bug.");
-			e.printStackTrace();
+            // Set System L&F
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} 
+		catch (UnsupportedLookAndFeelException e) {
+			// handle exception
+		}
+		catch (ClassNotFoundException e) {
+			// handle exception
+		}
+		catch (InstantiationException e) {
+			//handle exception
+		}
+		catch (IllegalAccessException e) {
+			// handle exception
 		}
 		
-		if (equation != null){
-			EqS eqs = new EqS(equation);
-			System.out.println(eqs.getAnswer());
-		}
+		Window window = new Window();
+		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		window.setSize(400, 300);
+		window.setVisible(true);
 	}
 	
 }

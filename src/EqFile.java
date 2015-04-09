@@ -1,4 +1,5 @@
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -23,7 +24,8 @@ public class EqFile {
 	}*/
 	
 	public Eq importEq(String path) throws IOException{
-		InputStream i = getClass().getResourceAsStream(path);
+		//InputStream i = getClass().getClassLoader().getResourceAsStream("eq/test.eq");
+		InputStream i = new FileInputStream(path);
 		BufferedReader reader = new BufferedReader(new InputStreamReader(i));
 		String line;
 		while ((line = reader.readLine()) != null){
