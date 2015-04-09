@@ -25,9 +25,9 @@ public class EqS {
 		solve();
 	}
 	
-	public EqS (Eq eq){
-		left = eq.getLeft();
-		right = eq.getRight();
+	public EqS (Thing left, Thing right){
+		this.left = left;
+		this.right = right;
 		
 		solve();
 	}

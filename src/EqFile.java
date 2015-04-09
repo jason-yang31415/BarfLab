@@ -1,5 +1,4 @@
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -14,18 +13,17 @@ public class EqFile {
 	String[] opsArray = {"+", "-", "*", "/", "^"};
 	ArrayList<String> ops = new ArrayList<String>(Arrays.asList(opsArray));
 	
-	/*public static void main(String[] args){
+	public static void main(String[] args){
 		try {
 			new EqFile();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}*/
+	}
 	
-	public Eq importEq(String path) throws IOException{
-		//InputStream i = getClass().getClassLoader().getResourceAsStream("eq/test.eq");
-		InputStream i = new FileInputStream(path);
+	public EqFile() throws IOException{
+		InputStream i = getClass().getResourceAsStream("eq/test_complicated.eq");
 		BufferedReader reader = new BufferedReader(new InputStreamReader(i));
 		String line;
 		while ((line = reader.readLine()) != null){
@@ -42,13 +40,11 @@ public class EqFile {
 				//parseExpression(leftString);
 				//parseExpression(rightString);
 				
-				Eq eq = new Eq(left, right);
-				return eq;
+				EqS eqs = new EqS(left, right);
+				System.out.println(eqs.getAnswer());
 			}
 		}
 		reader.close();
-		System.err.println("No equation found");
-		return null;
 	}
 	
 	public Thing parseExpression(String e){
