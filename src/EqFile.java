@@ -23,7 +23,7 @@ public class EqFile {
 		}
 	}*/
 	
-	public Eq importEq(String path) throws IOException{
+	/*public Eq importEqFromFile(String path) throws IOException{
 		//InputStream i = getClass().getClassLoader().getResourceAsStream("eq/test.eq");
 		InputStream i = new FileInputStream(path);
 		BufferedReader reader = new BufferedReader(new InputStreamReader(i));
@@ -47,6 +47,31 @@ public class EqFile {
 			}
 		}
 		reader.close();
+		System.err.println("No equation found");
+		return null;
+	}*/
+	
+	public Eq importEqFromString(String eqString) throws IOException{
+		//InputStream i = getClass().getClassLoader().getResourceAsStream("eq/test.eq");
+		String[] lines = eqString.split(System.getProperty("line.separator"));
+		for (String line : lines){
+			//parse
+			if (line.startsWith("EQ ")){
+				String equation = line.split("EQ ")[1];
+				equation = equation.replaceAll("\\s", "");
+				String[] line1 = equation.split("=");
+				String leftString = line1[0];
+				String rightString = line1[1];
+				
+				Thing left = parseExpression(leftString);
+				Thing right = parseExpression(rightString);
+				//parseExpression(leftString);
+				//parseExpression(rightString);
+				
+				Eq eq = new Eq(left, right);
+				return eq;
+			}
+		}
 		System.err.println("No equation found");
 		return null;
 	}

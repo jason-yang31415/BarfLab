@@ -29,7 +29,7 @@ public class Boot {
 		
 		Window window = new Window();
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		window.setSize(400, 300);
+		window.setSize(1280, 720);
 		window.setVisible(true);
 	}
 	
