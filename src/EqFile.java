@@ -51,25 +51,29 @@ public class EqFile {
 		return null;
 	}*/
 	
-	public Eq importEqFromString(String eqString) throws IOException{
+	public Eq importEqFromString(String eqString) {
 		//InputStream i = getClass().getClassLoader().getResourceAsStream("eq/test.eq");
 		String[] lines = eqString.split(System.getProperty("line.separator"));
 		for (String line : lines){
 			//parse
 			if (line.startsWith("EQ ")){
-				String equation = line.split("EQ ")[1];
-				equation = equation.replaceAll("\\s", "");
-				String[] line1 = equation.split("=");
-				String leftString = line1[0];
-				String rightString = line1[1];
-				
-				Thing left = parseExpression(leftString);
-				Thing right = parseExpression(rightString);
-				//parseExpression(leftString);
-				//parseExpression(rightString);
-				
-				Eq eq = new Eq(left, right);
-				return eq;
+				if (line.split("EQ ").length > 1){
+					String equation = line.split("EQ ")[1];
+					equation = equation.replaceAll("\\s", "");
+					if (equation.split("=").length > 1){
+						String[] line1 = equation.split("=");
+						String leftString = line1[0];
+						String rightString = line1[1];
+						
+						Thing left = parseExpression(leftString);
+						Thing right = parseExpression(rightString);
+						//parseExpression(leftString);
+						//parseExpression(rightString);
+						
+						Eq eq = new Eq(left, right);
+						return eq;
+					}
+				}
 			}
 		}
 		System.err.println("No equation found");

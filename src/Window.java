@@ -19,6 +19,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 
 public class Window extends JFrame {
@@ -43,6 +46,8 @@ public class Window extends JFrame {
 	private JButton importButton;
 	
 	private JPanel varPanel;
+	
+	private JTextField answerText;
 	
 	private JPanel equationPanel;
 	private JTextPane equationTP;
@@ -130,10 +135,13 @@ public class Window extends JFrame {
 		//                                                  VARIABLES
 		//====================================================================================================
 		varPanel = new JPanel();
+		varPanel.setLayout(new BorderLayout());
 		
 		//                                                  ANSWER
 		//====================================================================================================
-		
+		answerText = new JTextField();
+		answerText.setEditable(false);
+		varPanel.add(answerText, BorderLayout.SOUTH);
 		
 		//                                                  EQUATION
 		//====================================================================================================
@@ -142,6 +150,7 @@ public class Window extends JFrame {
 		//add(equationPanel, BorderLayout.CENTER);
 		
 		equationTP = new JTextPane();
+		equationTP.getDocument().addDocumentListener(new DocListener());
 		//equationTP.setPreferredSize(new Dimension(500, 500));
 		equationPanel.add(equationTP);
 		
@@ -170,8 +179,7 @@ public class Window extends JFrame {
 		add(var_eqer);
 	}
 	
-	public void doStuff(String path){
-		Eq equation = null;
+	public void importFile(String path){
 		/*try {
 			path = path.replace('\\', '/');
             System.out.println("opening " + path);
@@ -197,15 +205,14 @@ public class Window extends JFrame {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		try {
-			equation = new EqFile().importEqFromString(equationTP.getText());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	}
+	
+	public void update(){
+		Eq equation = new EqFile().importEqFromString(equationTP.getText());
 		if (equation != null){
 			EqS eqs = new EqS(equation);
 			System.out.println(eqs.getAnswer());
+			answerText.setText(String.format("%f", eqs.getAnswer()));
 		}
 	}
 	
@@ -241,7 +248,7 @@ public class Window extends JFrame {
 			}
 			if (event.getSource() == importButton){
 				path = addressTF.getText();
-				doStuff(path);
+				importFile(path);
 			}
 		}
 		
@@ -261,5 +268,19 @@ public class Window extends JFrame {
 		}
 		
 	}
+	
+	private class DocListener implements DocumentListener {
+	 
+	    public void insertUpdate(DocumentEvent e) {
+	        update();
+	    }
+	    public void removeUpdate(DocumentEvent e) {
+	        update();
+	    }
+	    public void changedUpdate(DocumentEvent e) {
+	        update();
+	    }
+	}
+
 	
 }
