@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -282,7 +283,32 @@ public class EqFile {
 								for (int i = 1; i < list.size(); i++){
 									s += list.get(i);
 								}
-								Eq equation = new EqFile().parseEquation(s);
+								Eq equation = null;
+								if (s.startsWith("\\")){
+									String path = s.substring(1, s.length());
+									if (path.endsWith(".eq")){
+										String eqString = "";
+										try {
+											InputStream i = new FileInputStream(path);
+											BufferedReader reader = new BufferedReader(new InputStreamReader(i));
+											String line;
+											while ((line = reader.readLine()) != null){
+												eqString += line + "\n";
+											}
+											reader.close();
+										} catch (FileNotFoundException e1) {
+											// TODO Auto-generated catch block
+											System.err.println("File at '" + path + "' not found\njava.io.FileNotFoundException");
+										} catch (IOException ioe) {
+											// TODO Auto-generated catch block
+											System.err.println("Something screwed up\njava.io.IOException");
+										}
+										equation = new EqFile().importEqFromString(eqString);
+									}
+								}
+								else {
+									equation = new EqFile().parseEquation(s);
+								}
 								if (equation != null){
 									EqS eqs = new EqS(equation);
 									float answer = eqs.getAnswer();
