@@ -255,11 +255,23 @@ public class EqFile {
 						List<String> list = vars.get(e);
 						if (list.get(0).equals("k")){
 							if (list.size() >= 2){
-								try {
-									thing = new Value(Float.parseFloat(list.get(1)), false);
+								String s = "";
+								for (int i = 1; i < list.size(); i++){
+									s += list.get(i);
 								}
-								catch (NumberFormatException err){
-									System.err.println("Unexpected '" + e + "'\njava.lang.NumberFormatException");
+								String[] array = s.split("");
+								boolean containsVar = false;
+								for (String c : array){
+									if (isAlpha(c)){
+										containsVar = true;
+									}
+								}
+								if (!containsVar){
+									thing = parseExpression(s);
+								}
+								else {
+									System.err.println("Cannot have variable in constant");
+									thing = new Value(0, false);
 									syntax = false;
 								}
 							}	
@@ -302,6 +314,7 @@ public class EqFile {
 					}
 					catch (NumberFormatException err){
 						System.err.println("Unexpected '" + e + "'\njava.lang.NumberFormatException");
+						thing = new Value(0, false);
 						syntax = false;
 					}
 				}
