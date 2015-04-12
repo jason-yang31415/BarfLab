@@ -4,15 +4,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-
+import java.util.Arrays; 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class EqFile {
 
+	Eq eq;
+	
+	boolean syntax = true;
+	
 	String[] numeralsArray = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"};
 	ArrayList<String> numerals = new ArrayList<String>(Arrays.asList(numeralsArray));
 	String[] opsArray = {"+", "-", "*", "/", "^"};
 	ArrayList<String> ops = new ArrayList<String>(Arrays.asList(opsArray));
+	
+	String eqString;
+	Map<String, List<String>> vars = new HashMap<String, List<String>>();
 	
 	/*public static void main(String[] args){
 		try {
@@ -53,31 +62,76 @@ public class EqFile {
 	
 	public Eq importEqFromString(String eqString) {
 		//InputStream i = getClass().getClassLoader().getResourceAsStream("eq/test.eq");
+		syntax = true;
+		String eqLineString = null;
 		String[] lines = eqString.split(System.getProperty("line.separator"));
 		for (String line : lines){
 			//parse
 			if (line.startsWith("EQ ")){
-				if (line.split("EQ ").length > 1){
-					String equation = line.split("EQ ")[1];
-					equation = equation.replaceAll("\\s", "");
-					if (equation.split("=").length > 1){
-						String[] line1 = equation.split("=");
-						String leftString = line1[0];
-						String rightString = line1[1];
-						
-						Thing left = parseExpression(leftString);
-						Thing right = parseExpression(rightString);
-						//parseExpression(leftString);
-						//parseExpression(rightString);
-						
-						Eq eq = new Eq(left, right);
-						return eq;
+				eqLineString = line;
+			}
+			else if (line.startsWith("def")){
+				String[] vdefSegs = line.split(" ");
+				if (vdefSegs.length >= 4){
+					ArrayList<String> array = new ArrayList<String>();
+					for (int i = 2; i < vdefSegs.length; i++){
+						array.add(vdefSegs[i]);
 					}
+					vars.put(vdefSegs[1], array);
+				}
+				else {
+					System.err.println("Expected variable name and def");
+					syntax = false;
 				}
 			}
+			else if (line.startsWith("//")){
+				
+			}
+			else {
+				System.err.println("Unexpected '" + line + "'");
+				syntax = false;
+			}
 		}
-		System.err.println("No equation found");
+		if (eqLineString != null){
+			Eq eq = parseFile(eqLineString);
+			if (syntax)
+				return eq;
+			else {
+				System.err.println("Syntax error");
+				return null;
+			}
+		}
 		return null;
+	}
+	
+	public Eq parseFile(String eqString){
+		if (eqString != null && eqString.split("EQ ").length > 1){
+			String equation = eqString.split("EQ ")[1];
+			Eq eq = parseEquation(equation);
+			
+			return eq;
+		}
+		System.err.println("No eq found");
+		syntax = false;
+		return null;
+	}
+	
+	public Eq parseEquation(String equation){
+		equation = equation.replaceAll("\\s", "");
+		if (equation.contains("=") && equation.split("=").length > 1){
+			String[] line1 = equation.split("=");
+			String leftString = line1[0];
+			String rightString = line1[1];
+			
+			Thing left = parseExpression(leftString);
+			Thing right = parseExpression(rightString);
+			
+			Eq eq = new Eq(left, right);
+			return eq;
+		}
+		else {
+			return null;
+		}
 	}
 	
 	public Thing parseExpression(String e){
@@ -196,15 +250,63 @@ public class EqFile {
 			}
 			else {
 				//Parse e as constant or var
-				if (isUpper(e)){
-					thing = new Value(0, true);
+				if (isAlpha(e)){
+					if (vars.containsKey(e)){
+						List<String> list = vars.get(e);
+						if (list.get(0).equals("k")){
+							if (list.size() >= 2){
+								try {
+									thing = new Value(Float.parseFloat(list.get(1)), false);
+								}
+								catch (NumberFormatException err){
+									System.err.println("Unexpected '" + e + "'\njava.lang.NumberFormatException");
+									syntax = false;
+								}
+							}	
+						}
+						else if (list.get(0).equals("eq")){
+							if (list.size() >= 2){
+								String s = "";
+								for (int i = 1; i < list.size(); i++){
+									s += list.get(i);
+								}
+								Eq equation = new EqFile().parseEquation(s);
+								if (equation != null){
+									EqS eqs = new EqS(equation);
+									float answer = eqs.getAnswer();
+									thing = new Value(answer, false);
+								}
+								else {
+									System.err.println("No eq found in var def");
+									thing = new Value(0, false);
+									syntax = false;
+								}
+							}
+						}
+						else if (list.get(0).equals("v")){
+							thing = new Value(0, true);
+						}
+						else {
+							System.err.println("Unexpected '" + list.get(0) + "'");
+						}
+						
+					}
+					else {
+						thing = new Value(0, true);
+					}
+					
 				}
 				else {
-					thing = new Value(Float.parseFloat(e), false);
+					try {
+						thing = new Value(Float.parseFloat(e), false);
+					}
+					catch (NumberFormatException err){
+						System.err.println("Unexpected '" + e + "'\njava.lang.NumberFormatException");
+						syntax = false;
+					}
 				}
 			}
 		}
-		
 		return thing;
 		
 		/*e = e.replaceAll("\\s", "");
@@ -235,6 +337,10 @@ public class EqFile {
 			}
 		}
 		return true;
+	}
+	
+	public boolean getSyntax(){
+		return syntax;
 	}
 	
 }

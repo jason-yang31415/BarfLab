@@ -58,6 +58,13 @@ public class Operation extends Thing {
 		return false;
 	}
 	
+	public boolean containsSolve(){
+		if (v1.containsSolve() || v2.containsSolve()){
+			return true;
+		}
+		return false;
+	}
+	
 	public float calculate(){
 		switch (type){
 		case ADD:

@@ -3,6 +3,7 @@ public class Value extends Thing {
 
 	float value;
 	boolean var;
+	boolean solve;
 	
 	Thing parent;
 	
@@ -19,8 +20,16 @@ public class Value extends Thing {
 		this.value = value;
 	}
 	
+	public void setSolve(boolean solve){
+		this.solve = solve;
+	}
+	
 	public boolean containsVar(){
 		return var;
+	}
+	
+	public boolean containsSolve(){
+		return solve;
 	}
 	
 	public float calculate(){

@@ -7,4 +7,6 @@ public abstract class Thing {
 	
 	public abstract boolean containsVar();
 	
+	public abstract boolean containsSolve();
+	
 }
