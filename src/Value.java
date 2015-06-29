@@ -1,15 +1,24 @@
+import java.util.ArrayList;
+
 
 public class Value extends Thing {
 
 	float value;
+	String name;
 	boolean var;
 	boolean solve;
 	
 	Thing parent;
 	
-	public Value(float value, boolean var){
+	public Value(float value, String name, boolean var, boolean solve){
 		this.value = value;
+		this.name = name;
 		this.var = var;
+		if (var)
+			this.solve = solve;
+		else
+			this.solve = false;
+		
 	}
 	
 	public void setParent(Thing parent){
@@ -32,8 +41,22 @@ public class Value extends Thing {
 		return solve;
 	}
 	
+	public ArrayList<Value> getSolve(){
+		if (solve){
+			ArrayList<Value> list = new ArrayList<Value>();
+			list.add(this);
+			return list;
+		}
+		else
+			return null;
+	}
+	
 	public float calculate(){
 		return value;
+	}
+	
+	public String getName(){
+		return name;
 	}
 	
 }

@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 
 public abstract class Thing {
 
@@ -8,5 +10,7 @@ public abstract class Thing {
 	public abstract boolean containsVar();
 	
 	public abstract boolean containsSolve();
+	
+	public abstract ArrayList<Value> getSolve();
 	
 }

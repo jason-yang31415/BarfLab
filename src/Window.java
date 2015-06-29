@@ -17,6 +17,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Enumeration;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -27,6 +28,9 @@ import javax.swing.text.StyledDocument;
 public class Window extends JFrame {
 	
 	String path;
+	
+	static Handler handler;
+	static ItemHandler itemHandler;
 	
 	private JMenuBar menu;
 	
@@ -45,11 +49,12 @@ public class Window extends JFrame {
 	private JTextField addressTF;
 	private JButton importButton;
 	
-	private JPanel varPanel;
+	private static JPanel varPanel;
+	static ButtonGroup buttonGroup;
 	
-	private JTextField answerText;
+	private static JTextField answerText;
 	
-	private JPanel equationPanel;
+	private static Panel activePanel;
 	private JTextPane equationTP;
 	//private SOMETHING equationSOMETHING;
 	
@@ -59,8 +64,8 @@ public class Window extends JFrame {
 		super("BarfLab");
 		setLayout(new BorderLayout());
 		
-		Handler handler = new Handler();
-		ItemHandler itemHandler = new ItemHandler();
+		handler = new Handler();
+		itemHandler = new ItemHandler();
 		
 		//                                                  MENU
 		//====================================================================================================
@@ -136,6 +141,7 @@ public class Window extends JFrame {
 		//====================================================================================================
 		varPanel = new JPanel();
 		varPanel.setLayout(new BorderLayout());
+		varUpdate();
 		
 		//                                                  ANSWER
 		//====================================================================================================
@@ -145,14 +151,16 @@ public class Window extends JFrame {
 		
 		//                                                  EQUATION
 		//====================================================================================================
-		equationPanel = new JPanel();
+		/*equationPanel = new JPanel();
 		equationPanel.setLayout(new GridLayout(1, 1));
 		//add(equationPanel, BorderLayout.CENTER);
 		
 		equationTP = new JTextPane();
 		equationTP.getDocument().addDocumentListener(new DocListener());
 		//equationTP.setPreferredSize(new Dimension(500, 500));
-		equationPanel.add(equationTP);
+		equationPanel.add(equationTP);*/
+		
+		Panel panel = new Panel();
 		
 		//                                                  ERRORS
 		//====================================================================================================
@@ -165,10 +173,11 @@ public class Window extends JFrame {
 		errorPanel.add(text);
 		
 		Dimension minimumSize = new Dimension(100, 50);
-		equationPanel.setMinimumSize(minimumSize);
+		//equationPanel.setMinimumSize(minimumSize);
 		errorPanel.setMinimumSize(minimumSize);
 		
-		JSplitPane equation_error = new JSplitPane(JSplitPane.VERTICAL_SPLIT, equationPanel, errorPanel);
+		//JSplitPane equation_error = new JSplitPane(JSplitPane.VERTICAL_SPLIT, equationPanel, errorPanel);
+		JSplitPane equation_error = new JSplitPane(JSplitPane.VERTICAL_SPLIT, panel.getPanel(), errorPanel);
 		equation_error.setDividerLocation(500 + equation_error.getInsets().top);
 		equation_error.setOneTouchExpandable(true);
 		
@@ -177,6 +186,60 @@ public class Window extends JFrame {
 		equation_error.setOneTouchExpandable(true);
 		
 		add(var_eqer);
+	}
+	
+	public static void varUpdate() {
+		Panel p = activePanel;
+		varPanel.removeAll();
+		buttonGroup = new ButtonGroup();
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+		if (p != null) {
+			if (p.getEQ() != null){
+				if (p.getEQ().getVars() != null){
+					for (Value v : p.getEQ().getVars()){
+						JPanel subp = new JPanel();
+						JRadioButton button = new JRadioButton(v.getName(), false);
+						button.addItemListener(itemHandler);
+						JTextField textfield = new JTextField(10);
+						textfield.getDocument().addDocumentListener(new DocListener());
+						subp.add(button);
+						subp.add(textfield);
+						panel.add(subp);
+						buttonGroup.add(button);
+					}
+				}
+			}	
+		}
+		varPanel.add(panel);
+		if (answerText != null){
+			varPanel.add(answerText, BorderLayout.SOUTH);
+		}
+		varPanel.validate();
+		varPanel.repaint();
+	}
+
+	public static void varButtons(){
+		int counter = 0;
+		int i = 0;
+		System.out.println();
+		for (Enumeration<AbstractButton> buttons = buttonGroup.getElements(); buttons.hasMoreElements();) {
+            AbstractButton button = buttons.nextElement();
+            
+            if (button.isSelected())
+                i = counter;
+            else {
+            	try {
+            		float v = Float.parseFloat(((JTextField) button.getParent().getComponent(1)).getText());
+            		activePanel.getEQ().getVars().get(counter).setValue(v);
+            	} catch (NumberFormatException e){
+            		System.err.println("Var input not a number");
+            	}
+            }
+        	
+        	counter++;
+        }
+		activePanel.setSolve(activePanel.getEQ().getVars().get(i));
 	}
 	
 	public void importFile(String path){
@@ -193,9 +256,9 @@ public class Window extends JFrame {
 			InputStream i = new FileInputStream(path);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(i));
 			String line;
-			equationTP.setText("");
+			activePanel.textpane.setText("");
 			while ((line = reader.readLine()) != null){
-				equationTP.setText(equationTP.getText() + line + "\n");
+				activePanel.textpane.setText(activePanel.textpane.getText() + line + "\n");
 			}
 			reader.close();
 		} catch (FileNotFoundException e1) {
@@ -207,13 +270,12 @@ public class Window extends JFrame {
 		}
 	}
 	
-	public void update(){
-		Eq equation = new EqFile().importEqFromString(equationTP.getText());
-		if (equation != null){
-			EqS eqs = new EqS(equation);
-			System.out.println(eqs.getAnswer());
-			answerText.setText(String.format("%f", eqs.getAnswer()));
-		}
+	public static void setActivePanel(Panel panel){
+		activePanel = panel;
+	}
+	
+	public static void setAnswer(float answer){
+		answerText.setText(String.format("%f", answer));
 	}
 	
 	public void browse(){
@@ -265,22 +327,25 @@ public class Window extends JFrame {
 	            	importBar.setVisible(false);
 	            }
 			}
+			else if (event.getSource() instanceof JRadioButton){
+				varButtons();
+			}
 		}
 		
 	}
 	
-	private class DocListener implements DocumentListener {
-	 
+	private static class DocListener implements DocumentListener {
+		 
 	    public void insertUpdate(DocumentEvent e) {
-	        update();
+	    	varButtons();
 	    }
 	    public void removeUpdate(DocumentEvent e) {
-	        update();
+	    	varButtons();
 	    }
 	    public void changedUpdate(DocumentEvent e) {
-	        update();
+	    	varButtons();
 	    }
+	    
 	}
-
 	
 }

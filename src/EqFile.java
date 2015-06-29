@@ -73,7 +73,7 @@ public class EqFile {
 			}
 			else if (line.startsWith("def")){
 				String[] vdefSegs = line.split(" ");
-				if (vdefSegs.length >= 4){
+				if (vdefSegs.length >= 3){
 					ArrayList<String> array = new ArrayList<String>();
 					for (int i = 2; i < vdefSegs.length; i++){
 						array.add(vdefSegs[i]);
@@ -86,6 +86,9 @@ public class EqFile {
 				}
 			}
 			else if (line.startsWith("//")){
+				
+			}
+			else if (line.startsWith("")){
 				
 			}
 			else {
@@ -272,10 +275,14 @@ public class EqFile {
 								}
 								else {
 									System.err.println("Cannot have variable in constant");
-									thing = new Value(0, false);
+									thing = new Value(0, null, false, false);
 									syntax = false;
 								}
-							}	
+							}
+							else {
+								System.err.println("No constant definition");
+								thing = new Value(0, null, false, false);
+							}
 						}
 						else if (list.get(0).equals("eq")){
 							if (list.size() >= 2){
@@ -312,17 +319,18 @@ public class EqFile {
 								if (equation != null){
 									EqS eqs = new EqS(equation);
 									float answer = eqs.getAnswer();
-									thing = new Value(answer, false);
+									thing = new Value(answer, null, false, false);
 								}
 								else {
 									System.err.println("No eq found in var def");
-									thing = new Value(0, false);
+									thing = new Value(0, null, false, false);
 									syntax = false;
 								}
 							}
 						}
 						else if (list.get(0).equals("v")){
-							thing = new Value(0, true);
+							thing = new Value(0, e, true, true);
+							
 						}
 						else {
 							System.err.println("Unexpected '" + list.get(0) + "'");
@@ -330,17 +338,17 @@ public class EqFile {
 						
 					}
 					else {
-						thing = new Value(0, true);
+						thing = new Value(0, e, true, true);
 					}
 					
 				}
 				else {
 					try {
-						thing = new Value(Float.parseFloat(e), false);
+						thing = new Value(Float.parseFloat(e), null, false, false);
 					}
 					catch (NumberFormatException err){
 						System.err.println("Unexpected '" + e + "'\njava.lang.NumberFormatException");
-						thing = new Value(0, false);
+						thing = new Value(0, null, false, false);
 						syntax = false;
 					}
 				}

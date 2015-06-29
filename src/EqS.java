@@ -9,22 +9,6 @@ public class EqS {
 		new EqS();
 	}*/
 	
-	public EqS(){
-		//setup
-		// log (9, x) = 2
-		Thing l9 = new Value(9f, false);
-		Thing lx = new Value(0f, true);
-		Thing lOp1 = new Operation(OpType.LOG, l9, lx);
-		lOp1.setParent(null);
-		left = lOp1;
-		
-		Thing r2 = new Value(2f, false);
-		r2.setParent(null);
-		right = r2;
-		
-		solve();
-	}
-	
 	public EqS (Eq eq){
 		left = eq.getLeft();
 		right = eq.getRight();
@@ -35,7 +19,7 @@ public class EqS {
 	public void solve(){
 		Thing eval;
 		Thing var;
-		if (left.containsVar()){
+		if (left.containsSolve()){
 			eval = right;
 			var = left;
 		}
@@ -52,7 +36,7 @@ public class EqS {
 			Operation varOp = (Operation) var;
 			
 			boolean position = true;
-			if (varOp.v1.containsVar())
+			if (varOp.v1.containsSolve())
 				position = true;
 			else 
 				position = false;
@@ -82,7 +66,7 @@ public class EqS {
 				var = varOp.v2;
 			}
 			
-			if (left.containsVar()){
+			if (left.containsSolve()){
 				right = eval;
 				left = var;
 			}

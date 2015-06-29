@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 
 public class Operation extends Thing {
 
@@ -63,6 +65,17 @@ public class Operation extends Thing {
 			return true;
 		}
 		return false;
+	}
+	
+	public ArrayList<Value> getSolve(){
+		ArrayList<Value> list = new ArrayList<Value>();
+		if (v1.getSolve() != null){
+			list.addAll(v1.getSolve());
+		}
+		if (v2.getSolve() != null){
+			list.addAll(v2.getSolve());
+		}
+		return list;
 	}
 	
 	public float calculate(){
