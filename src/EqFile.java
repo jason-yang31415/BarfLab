@@ -96,16 +96,19 @@ public class EqFile {
 				syntax = false;
 			}
 		}
-		if (eqLineString != null){
-			Eq eq = parseFile(eqLineString);
-			if (syntax)
-				return eq;
-			else {
+		
+		if ((eq = parseFile(eqLineString)) != null){
+			if(!syntax) {
 				System.err.println("Syntax error");
-				return null;
+				eq.setSyntax(false);
 			}
 		}
-		return null;
+		else {
+			syntax = false;
+			eq = new Eq(null, null);
+			eq.setSyntax(false);
+		}
+		return eq;
 	}
 	
 	public Eq parseFile(String eqString){
@@ -213,28 +216,34 @@ public class EqFile {
 			System.out.println(leftString);
 			System.out.println(rightString);
 			System.out.println();
-			OpType type;
-			switch(op){
-			case "+":
-				type = OpType.ADD;
-				break;
-			case "-":
-				type = OpType.SUB;
-				break;
-			case "*":
-				type = OpType.MULT;
-				break;
-			case "/":
-				type = OpType.DIV;
-				break;
-			case "^":
-				type = OpType.POW;
-				break;
-			default:
-				type = OpType.ADD;
-				break;
+			if (leftString.equals("") || rightString.equals("")){
+				System.err.println("Expected value");
+				syntax = false;
 			}
-			thing = new Operation(type, parseExpression(leftString), parseExpression(rightString));
+			else {
+				OpType type;
+				switch(op){
+				case "+":
+					type = OpType.ADD;
+					break;
+				case "-":
+					type = OpType.SUB;
+					break;
+				case "*":
+					type = OpType.MULT;
+					break;
+				case "/":
+					type = OpType.DIV;
+					break;
+				case "^":
+					type = OpType.POW;
+					break;
+				default:
+					type = OpType.ADD;
+					break;
+				}
+				thing = new Operation(type, parseExpression(leftString), parseExpression(rightString));
+			}
 		}
 		//Does not contain any ops outside parentheses
 		else {

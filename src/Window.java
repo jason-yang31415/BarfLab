@@ -220,26 +220,28 @@ public class Window extends JFrame {
 	}
 
 	public static void varButtons(){
-		int counter = 0;
-		int i = 0;
-		System.out.println();
-		for (Enumeration<AbstractButton> buttons = buttonGroup.getElements(); buttons.hasMoreElements();) {
-            AbstractButton button = buttons.nextElement();
-            
-            if (button.isSelected())
-                i = counter;
-            else {
-            	try {
-            		float v = Float.parseFloat(((JTextField) button.getParent().getComponent(1)).getText());
-            		activePanel.getEQ().getVars().get(counter).setValue(v);
-            	} catch (NumberFormatException e){
-            		System.err.println("Var input not a number");
-            	}
-            }
-        	
-        	counter++;
-        }
-		activePanel.setSolve(activePanel.getEQ().getVars().get(i));
+		if (activePanel.getEQ().syntax){
+			int counter = 0;
+			int i = 0;
+			System.out.println();
+			for (Enumeration<AbstractButton> buttons = buttonGroup.getElements(); buttons.hasMoreElements();) {
+	            AbstractButton button = buttons.nextElement();
+	            
+	            if (button.isSelected())
+	                i = counter;
+	            else {
+	            	try {
+	            		float v = Float.parseFloat(((JTextField) button.getParent().getComponent(1)).getText());
+	            		activePanel.getEQ().getVars().get(counter).setValue(v);
+	            	} catch (NumberFormatException e){
+	            		System.err.println("Var input not a number");
+	            	}
+	            }
+	        	
+	        	counter++;
+	        }
+			activePanel.setSolve(activePanel.getEQ().getVars().get(i));
+		}
 	}
 	
 	public void importFile(String path){

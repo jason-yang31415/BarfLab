@@ -7,6 +7,8 @@ public class Eq {
 	Thing right;
 	ArrayList<Value> vars = new ArrayList<Value>();
 	
+	boolean syntax = true;
+	
 	public Eq (Thing left, Thing right){
 		this.left = left;
 		this.right = right;
@@ -15,10 +17,12 @@ public class Eq {
 	}
 	
 	public void getSolve(){
-		if (left.getSolve() != null)
-			vars.addAll(left.getSolve());
-		if (right.getSolve() != null)
-			vars.addAll(right.getSolve());
+		if (left != null && right != null){
+			if (left.getSolve() != null)
+				vars.addAll(left.getSolve());
+			if (right.getSolve() != null)
+				vars.addAll(right.getSolve());
+		}
 	}
 	
 	public Thing getLeft(){
@@ -31,6 +35,10 @@ public class Eq {
 	
 	public ArrayList<Value> getVars(){
 		return vars;
+	}
+	
+	public void setSyntax(boolean syntax){
+		this.syntax = syntax;
 	}
 	
 }
