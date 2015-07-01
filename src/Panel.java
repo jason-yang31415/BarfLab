@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -6,9 +7,6 @@ import java.awt.event.MouseListener;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
-
-
 
 public class Panel {
 
@@ -19,15 +17,31 @@ public class Panel {
 	JTextPane textpane;
 	float answer;
 	
-	public Panel (){
+	int id;
+	JSplitPane parent;
+	
+	
+	public Panel (int id){
 		panel = new JPanel();
 		panel.setLayout(new GridLayout(1, 1));
+		
+		this.id = id;
 		
 		textpane = new JTextPane();
 		textpane.getDocument().addDocumentListener(new DocListener());
 		textpane.addMouseListener(new MouseHandler());
 		//equationTP.setPreferredSize(new Dimension(500, 500));
-		panel.add(textpane);
+		textpane.setComponentPopupMenu(Window.rmenu);
+		textpane.setBorder(BorderFactory.createEmptyBorder());
+		textpane.setFont(Window.fontNormal);
+		
+		JScrollPane scrollPane = new JScrollPane(textpane);
+		TextLineNumber tln = new TextLineNumber(textpane);
+		tln.setBackground(Color.decode("#F5F5F5"));
+		scrollPane.setRowHeaderView(tln);
+		scrollPane.setBorder(BorderFactory.createEmptyBorder());
+		
+		panel.add(scrollPane);
 	}
 	
 	public void update(){

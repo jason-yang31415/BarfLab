@@ -216,11 +216,8 @@ public class EqFile {
 			System.out.println(leftString);
 			System.out.println(rightString);
 			System.out.println();
-			if (leftString.equals("") || rightString.equals("")){
-				System.err.println("Expected value");
-				syntax = false;
-			}
-			else {
+			
+			if (leftString.length() > 0 && rightString.length() > 0){
 				OpType type;
 				switch(op){
 				case "+":
@@ -243,6 +240,11 @@ public class EqFile {
 					break;
 				}
 				thing = new Operation(type, parseExpression(leftString), parseExpression(rightString));
+			}
+			else {
+				System.err.println("Expected value");
+				thing = new Value(0, null, false, false);
+				syntax = false;
 			}
 		}
 		//Does not contain any ops outside parentheses
@@ -291,6 +293,7 @@ public class EqFile {
 							else {
 								System.err.println("No constant definition");
 								thing = new Value(0, null, false, false);
+								syntax = false;
 							}
 						}
 						else if (list.get(0).equals("eq")){
@@ -315,9 +318,11 @@ public class EqFile {
 										} catch (FileNotFoundException e1) {
 											// TODO Auto-generated catch block
 											System.err.println("File at '" + path + "' not found\njava.io.FileNotFoundException");
+											syntax = false;
 										} catch (IOException ioe) {
 											// TODO Auto-generated catch block
 											System.err.println("Something screwed up\njava.io.IOException");
+											syntax = false;
 										}
 										equation = new EqFile().importEqFromString(eqString);
 									}
@@ -325,7 +330,8 @@ public class EqFile {
 								else {
 									equation = new EqFile().parseEquation(s);
 								}
-								if (equation != null){
+								
+								if (equation != null && equation.syntax){
 									EqS eqs = new EqS(equation);
 									float answer = eqs.getAnswer();
 									thing = new Value(answer, null, false, false);
@@ -336,13 +342,15 @@ public class EqFile {
 									syntax = false;
 								}
 							}
+							else
+								syntax = false;
 						}
 						else if (list.get(0).equals("v")){
 							thing = new Value(0, e, true, true);
-							
 						}
 						else {
 							System.err.println("Unexpected '" + list.get(0) + "'");
+							syntax = false;
 						}
 						
 					}

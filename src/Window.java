@@ -3,6 +3,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FileDialog;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -11,6 +12,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -58,7 +61,15 @@ public class Window extends JFrame {
 	private JTextPane equationTP;
 	//private SOMETHING equationSOMETHING;
 	
+	public static JPopupMenu rmenu;
+	
 	private JPanel errorPanel;
+	
+	private int currentId = 0;
+	
+	//fonts
+	static Font fontNormal;
+	private static String fontString = "Century Gothic";
 	
 	public Window(){
 		super("BarfLab");
@@ -66,6 +77,8 @@ public class Window extends JFrame {
 		
 		handler = new Handler();
 		itemHandler = new ItemHandler();
+		
+		fontNormal = new Font(fontString, Font.PLAIN, 14);
 		
 		//                                                  MENU
 		//====================================================================================================
@@ -141,13 +154,46 @@ public class Window extends JFrame {
 		//====================================================================================================
 		varPanel = new JPanel();
 		varPanel.setLayout(new BorderLayout());
+		varPanel.setBorder(BorderFactory.createEmptyBorder());
 		varUpdate();
 		
 		//                                                  ANSWER
 		//====================================================================================================
 		answerText = new JTextField();
 		answerText.setEditable(false);
+		answerText.setBackground(Color.WHITE);
+		answerText.setHorizontalAlignment(JTextField.CENTER);
+		Font font = new Font(fontString, Font.BOLD,18);
+		answerText.setFont(font);
 		varPanel.add(answerText, BorderLayout.SOUTH);
+		
+
+		//                                                  RIGHT-CLICK MENU
+		//====================================================================================================	
+		rmenu = new JPopupMenu();
+        
+        /*JMenuItem hSplit = new JMenuItem("Split Horizontally");
+        hSplit.addActionListener(new ActionListener() {
+            
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            	splitHorizontal();
+            }
+            
+        });
+
+        rmenu.add(hSplit);
+
+        JMenuItem vSplit = new JMenuItem("Split Vertically");
+        vSplit.addActionListener(new ActionListener() {
+            
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                splitVertical();
+            }
+        });
+
+        rmenu.add(vSplit);*/
 		
 		//                                                  EQUATION
 		//====================================================================================================
@@ -160,7 +206,7 @@ public class Window extends JFrame {
 		//equationTP.setPreferredSize(new Dimension(500, 500));
 		equationPanel.add(equationTP);*/
 		
-		Panel panel = new Panel();
+		Panel panel = new Panel(currentId);
 		
 		//                                                  ERRORS
 		//====================================================================================================
@@ -184,6 +230,7 @@ public class Window extends JFrame {
 		JSplitPane var_eqer = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, varPanel, equation_error);
 		var_eqer.setDividerLocation(200 + var_eqer.getInsets().left);
 		equation_error.setOneTouchExpandable(true);
+		equation_error.setBorder(BorderFactory.createEmptyBorder());
 		
 		add(var_eqer);
 	}
@@ -200,9 +247,11 @@ public class Window extends JFrame {
 					for (Value v : p.getEQ().getVars()){
 						JPanel subp = new JPanel();
 						JRadioButton button = new JRadioButton(v.getName(), false);
+						button.setFont(fontNormal);
 						button.addItemListener(itemHandler);
 						JTextField textfield = new JTextField(10);
 						textfield.getDocument().addDocumentListener(new DocListener());
+						textfield.setFont(fontNormal);
 						subp.add(button);
 						subp.add(textfield);
 						panel.add(subp);
@@ -218,7 +267,7 @@ public class Window extends JFrame {
 		varPanel.validate();
 		varPanel.repaint();
 	}
-
+	
 	public static void varButtons(){
 		if (activePanel.getEQ().syntax){
 			int counter = 0;
