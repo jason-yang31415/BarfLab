@@ -2,31 +2,62 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FileDialog;
-import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.util.Enumeration;
 
-import javax.swing.*;
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JRadioButton;
+import javax.swing.JSplitPane;
+import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.JToolBar;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
-import javax.swing.text.StyledDocument;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
+
+import net.sourceforge.jeuclid.DOMBuilder;
+import net.sourceforge.jeuclid.MathMLParserSupport;
+import net.sourceforge.jeuclid.MutableLayoutContext;
+import net.sourceforge.jeuclid.context.LayoutContextImpl;
+import net.sourceforge.jeuclid.context.Parameter;
+import net.sourceforge.jeuclid.converter.Converter;
+import net.sourceforge.jeuclid.elements.generic.DocumentElement;
+import net.sourceforge.jeuclid.layout.JEuclidView;
+import net.sourceforge.jeuclid.parser.Parser;
 
 public class Window extends JFrame {
 	
@@ -64,6 +95,7 @@ public class Window extends JFrame {
 	public static JPopupMenu rmenu;
 	
 	private JPanel errorPanel;
+	private static RenderPanel renderPanel;
 	
 	private int currentId = 0;
 	
@@ -222,8 +254,15 @@ public class Window extends JFrame {
 		//equationPanel.setMinimumSize(minimumSize);
 		errorPanel.setMinimumSize(minimumSize);
 		
+		renderPanel = new RenderPanel();
+		renderPanel.setMinimumSize(new Dimension(250, 50));
+		renderPanel.setBackground(Color.WHITE);
+		
+		JSplitPane error_render = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, errorPanel, renderPanel);
+		error_render.setOneTouchExpandable(true);
+		
 		//JSplitPane equation_error = new JSplitPane(JSplitPane.VERTICAL_SPLIT, equationPanel, errorPanel);
-		JSplitPane equation_error = new JSplitPane(JSplitPane.VERTICAL_SPLIT, panel.getPanel(), errorPanel);
+		JSplitPane equation_error = new JSplitPane(JSplitPane.VERTICAL_SPLIT, panel.getPanel(), error_render);
 		equation_error.setDividerLocation(500 + equation_error.getInsets().top);
 		equation_error.setOneTouchExpandable(true);
 		
@@ -233,6 +272,24 @@ public class Window extends JFrame {
 		equation_error.setBorder(BorderFactory.createEmptyBorder());
 		
 		add(var_eqer);
+	}
+	
+	public static void update(){
+		render();
+		varUpdate();
+	}
+	
+	public static void render(){
+		try {
+			Document doc = MathMLParserSupport.parseString(activePanel.getEQ().mml);
+			MutableLayoutContext params = new LayoutContextImpl(LayoutContextImpl.getDefaultLayoutContext());
+			params.setParameter(Parameter.MATHSIZE, 25f);
+			BufferedImage bi = Converter.getInstance().render(doc, params);
+			renderPanel.setImage(bi);
+		} catch (SAXException | ParserConfigurationException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public static void varUpdate() {
@@ -339,9 +396,13 @@ public class Window extends JFrame {
 	}
 	
 	public void about(){
-		JOptionPane.showMessageDialog(null, "PROJECT BARFLAB\nBy Jason Yang and Roop Pal (not really)",
+		JOptionPane.showMessageDialog(null, "PROJECT BARFLAB\nBy Jason Yang and Roop Pal (not really)\n\n"
+				+ "This product includes software developed by JEulid (http://www.sourceforge.net/projects/jeuclid/).",
 				"About", JOptionPane.INFORMATION_MESSAGE);
 	}
+	
+	
+	
 	
 	private class Handler implements ActionListener {
 

@@ -47,11 +47,12 @@ public class Panel {
 	public void update(){
 		eqString = textpane.getText();
 		eq = new EqFile().importEqFromString(eqString);
-		if (eq != null && eq.syntax)
+		if (eq != null && eq.syntax){
 			solve();
+			Window.update();
+		}
 		
 		setActivePanel();
-		Window.varUpdate();
 	}
 	
 	public void solve(){
