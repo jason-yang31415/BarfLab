@@ -3,6 +3,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FileDialog;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
@@ -18,7 +19,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 
 import javax.swing.AbstractButton;
@@ -71,6 +74,8 @@ public class Window extends JFrame {
 	private JMenu fileMenu;
 	private JMenuItem fileMenuExit;
 	private JMenuItem fileMenuImport;
+	private JMenu fileMenuExportGroup;
+	private JMenuItem exportGroupMathML;
 	
 	private JMenu viewMenu;
 	private JCheckBoxMenuItem viewMenuImport;
@@ -126,6 +131,14 @@ public class Window extends JFrame {
         fileMenuImport.setToolTipText("Import");
         fileMenu.add(fileMenuImport);
         
+        fileMenuExportGroup = new JMenu("Export");
+        fileMenuExportGroup.setMnemonic(KeyEvent.VK_X);
+        fileMenu.add(fileMenuExportGroup);
+        
+        exportGroupMathML = new JMenuItem("MathML");
+        exportGroupMathML.setMnemonic(KeyEvent.VK_M);
+        fileMenuExportGroup.add(exportGroupMathML);
+        
         fileMenu.addSeparator();
         
         fileMenuExit = new JMenuItem("Exit");
@@ -134,6 +147,7 @@ public class Window extends JFrame {
         fileMenu.add(fileMenuExit);
         
         fileMenuExit.addActionListener(handler);
+        exportGroupMathML.addActionListener(handler);
         fileMenuImport.addActionListener(handler);
         
         viewMenu = new JMenu("View");
@@ -351,22 +365,21 @@ public class Window extends JFrame {
 	}
 	
 	public void importFile(String path){
-		/*try {
-			path = path.replace('\\', '/');
-            System.out.println("opening " + path);
-			equation = new EqFile().importEq(path);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			System.err.println("Something screwed up :(\nPlease report this bug.");
-			e.printStackTrace();
-		}*/
 		try {
 			InputStream i = new FileInputStream(path);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(i));
 			String line;
-			activePanel.textpane.setText("");
+			String s = "";
 			while ((line = reader.readLine()) != null){
-				activePanel.textpane.setText(activePanel.textpane.getText() + line + "\n");
+				s += line + "\n";
+			}
+			
+			if (path.endsWith(".eq")){
+				activePanel.textpane.setText(s);
+			}
+			else if (path.endsWith(".xml")){
+				String text = MMLConverter.convert(s);
+				activePanel.textpane.setText(text);
 			}
 			reader.close();
 		} catch (FileNotFoundException e1) {
@@ -387,11 +400,28 @@ public class Window extends JFrame {
 	}
 	
 	public void browse(){
-		FileDialog fc = new java.awt.FileDialog((java.awt.Frame) null);
-		fc.setVisible(true);
-		String browsePath = fc.getDirectory() + fc.getFile();
-		if (fc.getFile() != null){
+		FileDialog fd = new FileDialog((Frame) null, "Browse", FileDialog.LOAD);
+		fd.setVisible(true);
+		String browsePath = fd.getDirectory() + fd.getFile();
+		if (fd.getFile() != null){
 			addressTF.setText(browsePath);
+		}
+	}
+	
+	public void export(Eq eq){
+		FileDialog fd = new FileDialog((Frame) null, "Export to MathML", FileDialog.SAVE);
+		fd.setVisible(true);
+		String path = fd.getDirectory() + fd.getFile();
+		if (!path.endsWith(".xml")){
+			path += ".xml";
+		}
+		try {
+			PrintWriter writer = new PrintWriter(path, "UTF-8");
+			writer.print(eq.mml);
+			writer.close();
+		} catch (FileNotFoundException | UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	
@@ -413,6 +443,9 @@ public class Window extends JFrame {
 			}
 			if (event.getSource() == fileMenuImport){
 				browse();
+			}
+			if (event.getSource() == exportGroupMathML){
+				export(activePanel.getEQ());
 			}
 			if (event.getSource() == helpMenuAbout){
 				about();

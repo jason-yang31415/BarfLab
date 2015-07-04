@@ -1,5 +1,23 @@
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 
 public class MMLConverter {
@@ -7,9 +25,72 @@ public class MMLConverter {
 	public static String[] opsArray = {"ADD", "SUB", "MULT", "DIV", "POW"};
 	public static ArrayList<String> ops = new ArrayList<String>(Arrays.asList(opsArray));
 	
+	public static String convert(String e){
+		String s = "EQ ";
+		
+		try {
+			DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			Document doc = db.parse(new InputSource(new ByteArrayInputStream(e.getBytes("utf-8"))));
+			if (doc.hasChildNodes())
+				s += readNodeList(doc.getChildNodes());
+		} catch (ParserConfigurationException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (SAXException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		return s;
+	}
+	
+	public static String readNodeList(NodeList nl){
+		String s = "";
+		for (int i = 0; i < nl.getLength(); i++){
+			Node n = nl.item(i);
+			s += readNode(n);
+		}
+		s = s.replaceAll("(\\r|\\n)", "");
+		return s;
+	}
+	
+	public static String readNode(Node n){
+		//TODO add parentheses for mfrac and msup
+		
+		String s = "";
+		switch (n.getNodeType()){
+		case Node.ELEMENT_NODE:
+			if (n.getNodeType() == Node.ELEMENT_NODE){
+				switch (n.getNodeName()){
+				case "mfrac":
+					s += readNode(n.getChildNodes().item(1));
+					s += "/";
+					s += readNode(n.getChildNodes().item(3));
+					break;
+				case "msup":
+					s += readNode(n.getChildNodes().item(1));
+					s += "^";
+					s += readNode(n.getChildNodes().item(3));
+					break;
+				default:
+					s += readNodeList(n.getChildNodes());
+					break;
+				}
+			}
+			break;
+		case Node.TEXT_NODE:
+			s += n.getNodeValue();
+			break;
+		}
+		return s;
+	}
+	
 	public static String convert(Thing left, Thing right){
 		String s = "";
-		s += "<?xml version=\"1.0\"?>\n<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n";
+		s += "<?xml version=\"1.0\"?>\n<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 3.0//EN\" \"http://www.w3.org/Math/DTD/mathml3/mathml3.dtd\">\n";
 		s += "<math mode=\"display\">\n";
 		s += "<mrow>\n";
 		s += convertExpression(left);
