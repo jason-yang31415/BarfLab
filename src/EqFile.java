@@ -180,10 +180,10 @@ public class EqFile {
 		String op = "";
 		
 		for (String s : string){
-			if (s.equals("("))
+			if (s.equals("(") || s.equals("["))
 				parentheses++;
 			
-			if (s.equals(")"))
+			if (s.equals(")") || s.equals("]"))
 				parentheses--;
 			
 			//If character is outside parentheses
@@ -249,124 +249,163 @@ public class EqFile {
 		}
 		//Does not contain any ops outside parentheses
 		else {
-			boolean containsOp = false;
-			for (String s : string){
-				//Check if contains ops inside parentheses
-				if (ops.contains(s)){
-					containsOp = true;
+			if (e.startsWith("[") && e.endsWith("]")){
+				String[] params = e.substring(1, e.length() - 1).split(",");
+				switch (params[0]){
+				case "log":
+					if (params.length == 3)
+						thing = new Operation(OpType.LOG, parseExpression(params[1]), parseExpression(params[2]));
+					else {
+						System.err.println("Extra / insufficient parameters");
+						thing = new Value(0, null, false, false);
+						syntax = false;
+					}
+					break;
+				case "sqrt":
+					if (params.length == 2)
+						thing = new Operation(OpType.ROOT, parseExpression(params[1]), new Value(2, null, false, false));
+					else {
+						System.err.println("Extra / insufficient parameters");
+						thing = new Value(0, null, false, false);
+						syntax = false;
+					}
+					break;
+				case "root":
+					if (params.length == 3)
+						thing = new Operation(OpType.ROOT, parseExpression(params[1]), parseExpression(params[2]));
+					else {
+						System.err.println("Extra / insufficient parameters");
+						thing = new Value(0, null, false, false);
+						syntax = false;
+					}
+					break;
+				default:
+					System.err.println("No such function");
+					thing = new Value(0, null, false, false);
+					syntax = false;
+					break;
 				}
 			}
-			
-			//Check if contains ops inside parentheses
-			if (containsOp){
-				//remove outer parentheses
-				String stringNew = e.substring(1, e.length() - 1);
-				thing = parseExpression(stringNew);
-			}
 			else {
-				//Parse e as constant or var
-				if (isAlpha(e)){
-					if (vars.containsKey(e)){
-						List<String> list = vars.get(e);
-						if (list.get(0).equals("k")){
-							if (list.size() >= 2){
-								String s = "";
-								for (int i = 1; i < list.size(); i++){
-									s += list.get(i);
-								}
-								String[] array = s.split("");
-								boolean containsVar = false;
-								for (String c : array){
-									if (isAlpha(c)){
-										containsVar = true;
+				boolean containsOp = false;
+				for (String s : string){
+					//Check if contains ops inside parentheses
+					if (ops.contains(s)){
+						containsOp = true;
+					}
+				}
+				
+				//Check if contains ops inside parentheses
+				if (containsOp){
+					//remove outer parentheses
+					String stringNew = e.substring(1, e.length() - 1);
+					thing = parseExpression(stringNew);
+				}
+				else {
+					//Parse e as constant or var
+					if (isAlpha(e)){
+						if (vars.containsKey(e)){
+							List<String> list = vars.get(e);
+							if (list.get(0).equals("k")){
+								if (list.size() >= 2){
+									String s = "";
+									for (int i = 1; i < list.size(); i++){
+										s += list.get(i);
+									}
+									String[] array = s.split("");
+									boolean containsVar = false;
+									for (String c : array){
+										if (isAlpha(c)){
+											containsVar = true;
+										}
+									}
+									if (!containsVar){
+										thing = parseExpression(s);
+									}
+									else {
+										System.err.println("Cannot have variable in constant");
+										thing = new Value(0, null, false, false);
+										syntax = false;
 									}
 								}
-								if (!containsVar){
-									thing = parseExpression(s);
-								}
 								else {
-									System.err.println("Cannot have variable in constant");
+									System.err.println("No constant definition");
 									thing = new Value(0, null, false, false);
 									syntax = false;
 								}
+							}
+							else if (list.get(0).equals("eq")){
+								if (list.size() >= 2){
+									String s = "";
+									for (int i = 1; i < list.size(); i++){
+										s += list.get(i);
+									}
+									Eq equation = null;
+									if (s.startsWith("\\")){
+										String path = s.substring(1, s.length());
+										if (path.endsWith(".eq")){
+											String eqString = "";
+											try {
+												InputStream i = new FileInputStream(path);
+												BufferedReader reader = new BufferedReader(new InputStreamReader(i));
+												String line;
+												while ((line = reader.readLine()) != null){
+													eqString += line + "\n";
+												}
+												reader.close();
+											} catch (FileNotFoundException e1) {
+												// TODO Auto-generated catch block
+												System.err.println("File at '" + path + "' not found\njava.io.FileNotFoundException");
+												syntax = false;
+											} catch (IOException ioe) {
+												// TODO Auto-generated catch block
+												System.err.println("Something screwed up\njava.io.IOException");
+												syntax = false;
+											}
+											equation = new EqFile().importEqFromString(eqString);
+										}
+									}
+									else {
+										equation = new EqFile().parseEquation(s);
+									}
+									
+									if (equation != null && equation.syntax){
+										EqS eqs = new EqS(equation);
+										float answer = eqs.getAnswer();
+										thing = new Value(answer, null, false, false);
+									}
+									else {
+										System.err.println("No eq found in var def");
+										thing = new Value(0, null, false, false);
+										syntax = false;
+									}
+								}
+								else
+									syntax = false;
+							}
+							else if (list.get(0).equals("v")){
+								thing = new Value(0, e, true, true);
 							}
 							else {
-								System.err.println("No constant definition");
-								thing = new Value(0, null, false, false);
+								System.err.println("Unexpected '" + list.get(0) + "'");
 								syntax = false;
 							}
-						}
-						else if (list.get(0).equals("eq")){
-							if (list.size() >= 2){
-								String s = "";
-								for (int i = 1; i < list.size(); i++){
-									s += list.get(i);
-								}
-								Eq equation = null;
-								if (s.startsWith("\\")){
-									String path = s.substring(1, s.length());
-									if (path.endsWith(".eq")){
-										String eqString = "";
-										try {
-											InputStream i = new FileInputStream(path);
-											BufferedReader reader = new BufferedReader(new InputStreamReader(i));
-											String line;
-											while ((line = reader.readLine()) != null){
-												eqString += line + "\n";
-											}
-											reader.close();
-										} catch (FileNotFoundException e1) {
-											// TODO Auto-generated catch block
-											System.err.println("File at '" + path + "' not found\njava.io.FileNotFoundException");
-											syntax = false;
-										} catch (IOException ioe) {
-											// TODO Auto-generated catch block
-											System.err.println("Something screwed up\njava.io.IOException");
-											syntax = false;
-										}
-										equation = new EqFile().importEqFromString(eqString);
-									}
-								}
-								else {
-									equation = new EqFile().parseEquation(s);
-								}
-								
-								if (equation != null && equation.syntax){
-									EqS eqs = new EqS(equation);
-									float answer = eqs.getAnswer();
-									thing = new Value(answer, null, false, false);
-								}
-								else {
-									System.err.println("No eq found in var def");
-									thing = new Value(0, null, false, false);
-									syntax = false;
-								}
-							}
-							else
-								syntax = false;
-						}
-						else if (list.get(0).equals("v")){
-							thing = new Value(0, e, true, true);
+							
 						}
 						else {
-							System.err.println("Unexpected '" + list.get(0) + "'");
-							syntax = false;
+							thing = new Value(0, e, true, true);
 						}
 						
 					}
 					else {
-						thing = new Value(0, e, true, true);
-					}
-					
-				}
-				else {
-					try {
-						thing = new Value(Float.parseFloat(e), null, false, false);
-					}
-					catch (NumberFormatException err){
-						System.err.println("Unexpected '" + e + "'\njava.lang.NumberFormatException");
-						thing = new Value(0, null, false, false);
-						syntax = false;
+						try {
+							thing = new Value(Float.parseFloat(e), null, false, false);
+						}
+						catch (NumberFormatException err){
+							System.err.println("Unexpected '" + e + "'\njava.lang.NumberFormatException");
+							thing = new Value(0, null, false, false);
+							syntax = false;
+						}
 					}
 				}
 			}

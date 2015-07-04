@@ -22,8 +22,11 @@ import org.xml.sax.SAXException;
 
 public class MMLConverter {
 
-	public static String[] opsArray = {"ADD", "SUB", "MULT", "DIV", "POW"};
+	public static String[] opsArray = {"ADD", "SUB", "MULT", "DIV", "POW", "LOG", "ROOT"};
 	public static ArrayList<String> ops = new ArrayList<String>(Arrays.asList(opsArray));
+	
+	public static boolean log = false;
+	public static String logString;
 	
 	public static String convert(String e){
 		String s = "EQ ";
@@ -75,8 +78,26 @@ public class MMLConverter {
 					s += "^";
 					s += readNode(n.getChildNodes().item(3));
 					break;
+				case "msqrt":
+					s += "[sqrt, " + readNode(n.getChildNodes().item(1)) + "]";
+					break;
+				case "mroot":
+					s += "[root, " + readNode(n.getChildNodes().item(1)) + ", " + readNode(n.getChildNodes().item(3)) + "]";
+					break;
+				case "msub":
+					Node subn = n.getChildNodes().item(1);
+					if (subn.getNodeName().equals("mi") && subn.getChildNodes().item(0).getNodeValue().equals("log")){
+						s += "[log, ";
+						logString = readNode(n.getChildNodes().item(3));
+						log = true;
+					}
+					break;
 				default:
 					s += readNodeList(n.getChildNodes());
+					if (log){
+						s += ", " + logString + "]";
+						log = false;
+					}
 					break;
 				}
 			}
@@ -116,13 +137,14 @@ public class MMLConverter {
 			if (o.parent != null){
 				int o1 = ops.indexOf(((Operation) o.parent).type.toString());
 				int o2 = ops.indexOf(o.type.toString());
-				if (o1 > o2 && ((Operation) o.parent).type != OpType.DIV)
+				Operation parent = (Operation) o.parent;
+				if (o1 > o2 && parent.type != OpType.DIV && parent.type != OpType.LOG && parent.type != OpType.ROOT)
 					p = true;
 			}
 			if (p)
 				s += "<mo>(</mo>\n";
 			
-			switch (((Operation) e).type){
+			switch (o.type){
 			case ADD:
 				s += convertExpression(o.v1) + "\n<mo>+</mo>\n" + convertExpression(o.v2) + "\n";
 				break;
@@ -139,8 +161,13 @@ public class MMLConverter {
 				s += "<msup>\n" + convertExpression(o.v1) + "\n" + convertExpression(o.v2) + "</msup>\n";
 				break;
 			case ROOT:
+				if (o.v2.calculate() == 2)
+					s += "<msqrt>\n" + convertExpression(o.v1) + "\n</msqrt>\n";
+				else
+					s += "<mroot>\n" + convertExpression(o.v1) + convertExpression(o.v2) + "\n</mroot>\n";
 				break;
 			case LOG:
+				s += "<msub>\n<mi>log</mi>\n" + convertExpression(o.v2) + "</msub>\n" + convertExpression(o.v1) + "\n";
 				break;
 			}
 			
