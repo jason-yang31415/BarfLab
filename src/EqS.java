@@ -9,9 +9,31 @@ public class EqS {
 		new EqS();
 	}*/
 	
+<<<<<<< HEAD
 	public EqS (Eq eq){
 		left = eq.getLeft();
 		right = eq.getRight();
+=======
+	public EqS(){
+		//setup
+		// log (9, x) = 2
+		Thing l9 = new Value(9f, false);
+		Thing lx = new Value(0f, true);
+		Thing lOp1 = new Operation(OpType.LOG, l9, lx);
+		lOp1.setParent(null);
+		left = lOp1;
+		
+		Thing r2 = new Value(2f, false);
+		r2.setParent(null);
+		right = r2;
+		
+		solve();
+	}
+	
+	public EqS (Thing left, Thing right){
+		this.left = left;
+		this.right = right;
+>>>>>>> master
 		
 		solve();
 	}
