@@ -7,6 +7,7 @@ import java.awt.event.MouseListener;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.html.HTMLDocument;
 
 public class Panel {
 
@@ -28,12 +29,13 @@ public class Panel {
 		this.id = id;
 		
 		textpane = new JTextPane();
+		textpane.setFont(Window.fontNormal);
+		
 		textpane.getDocument().addDocumentListener(new DocListener());
 		textpane.addMouseListener(new MouseHandler());
 		//equationTP.setPreferredSize(new Dimension(500, 500));
 		textpane.setComponentPopupMenu(Window.rmenu);
 		textpane.setBorder(BorderFactory.createEmptyBorder());
-		textpane.setFont(Window.fontNormal);
 		
 		JScrollPane scrollPane = new JScrollPane(textpane);
 		TextLineNumber tln = new TextLineNumber(textpane);
@@ -45,6 +47,7 @@ public class Panel {
 	}
 	
 	public void update(){
+		
 		eqString = textpane.getText();
 		eq = new EqFile().importEqFromString(eqString);
 		if (eq != null && eq.syntax){
