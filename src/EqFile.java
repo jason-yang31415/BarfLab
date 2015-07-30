@@ -1,9 +1,6 @@
 import java.io.BufferedReader;
-<<<<<<< HEAD
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-=======
->>>>>>> master
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -23,8 +20,7 @@ public class EqFile {
 	ArrayList<String> numerals = new ArrayList<String>(Arrays.asList(numeralsArray));
 	String[] opsArray = {"+", "-", "*", "/", "^"};
 	ArrayList<String> ops = new ArrayList<String>(Arrays.asList(opsArray));
-	
-<<<<<<< HEAD
+
 	String eqString;
 	Map<String, List<String>> vars = new HashMap<String, List<String>>();
 	
@@ -152,8 +148,6 @@ public class EqFile {
 		else {
 			return null;
 		}
-=======
->>>>>>> master
 	}
 	
 	public Thing parseExpression(String e){

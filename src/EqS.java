@@ -9,12 +9,12 @@ public class EqS {
 		new EqS();
 	}*/
 	
-<<<<<<< HEAD
 	public EqS (Eq eq){
 		left = eq.getLeft();
 		right = eq.getRight();
-=======
-	public EqS(){
+	}
+	
+	/*public EqS(){
 		//setup
 		// log (9, x) = 2
 		Thing l9 = new Value(9f, false);
@@ -28,12 +28,11 @@ public class EqS {
 		right = r2;
 		
 		solve();
-	}
+	}*/
 	
 	public EqS (Thing left, Thing right){
 		this.left = left;
 		this.right = right;
->>>>>>> master
 		
 		solve();
 	}
