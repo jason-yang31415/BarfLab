@@ -12,6 +12,8 @@ public class EqS {
 	public EqS (Eq eq){
 		left = eq.getLeft();
 		right = eq.getRight();
+		
+		solve();
 	}
 	
 	/*public EqS(){
@@ -40,6 +42,7 @@ public class EqS {
 	public void solve(){
 		Thing eval;
 		Thing var;
+		
 		if (left.containsSolve()){
 			eval = right;
 			var = left;
