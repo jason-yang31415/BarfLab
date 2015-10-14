@@ -1,5 +1,4 @@
 # BarfLab
-Equation editor solver code thingy
+equation editor solver code thingy
 
-
-Solve, render, import, and export equations with multiple variables
+_solve, render, import, and export equations with multiple variables_
